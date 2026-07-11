@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trebuchet Simulator — Counterweight Launch Explorer</title>
+  <meta name="description" content="Educational browser-based counterweight trebuchet physics simulator. Explore configurations that launch a 0.5–1.5 kg projectile 20–25 m.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9A%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script>
+    // Apply the stored (or OS-preferred) theme before first paint to avoid a flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem('trebsim.theme');
+        var dark = stored ? stored === 'dark'
+          : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (e) { /* storage unavailable — keep default light theme */ }
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#controls-heading">Skip to controls</a>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <h1>Trebuchet Simulator</h1>
+        <p class="subtitle">Counterweight launch explorer &mdash; 0.5&ndash;1.5&nbsp;kg projectile, 20&ndash;25&nbsp;m target band</p>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggle" class="btn btn-ghost" type="button" aria-label="Toggle light or dark theme">
+          <span class="theme-icon" aria-hidden="true"></span><span class="theme-label">Theme</span>
+        </button>
+      </div>
+    </div>
+    <div class="header-inner">
+      <p class="intro">
+        This is an <strong>educational physics simulator</strong> for a counterweight trebuchet. Adjust the geometry,
+        counterweight, and losses, then watch the throw and the projectile flight computed by numerical integration.
+        The model is a deliberate simplification: real-world results depend on friction, structural flexibility,
+        release-pin mechanics, sling behaviour, aerodynamics, material strength, and construction quality that this
+        model only approximates. <strong>Do not use it as a structural-engineering or construction tool.</strong>
+      </p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== Controls column ===================== -->
+    <section class="controls-col" aria-labelledby="controls-heading">
+      <div class="panel-head">
+        <h2 id="controls-heading">Parameters</h2>
+        <div class="panel-head-actions">
+          <button id="btnReset" class="btn btn-ghost btn-sm" type="button" title="Restore all parameters to their defaults">Reset</button>
+          <button id="btnRandom" class="btn btn-ghost btn-sm" type="button" title="Randomize parameters within safe simulation bounds">Randomize</button>
+        </div>
+      </div>
+
+      <div id="validationBox" class="validation-box" role="status" aria-live="polite"></div>
+
+      <!-- Control rows are generated from the CONFIG parameter table in simulation.js -->
+      <details class="ctrl-group" open data-group="projectile">
+        <summary><span class="group-title">Projectile</span><span class="group-hint" data-hint="projectile"></span></summary>
+        <div class="group-body"></div>
+      </details>
+      <details class="ctrl-group" open data-group="geometry">
+        <summary><span class="group-title">Trebuchet geometry</span><span class="group-hint" data-hint="geometry"></span></summary>
+        <div class="group-body"></div>
+      </details>
+      <details class="ctrl-group" open data-group="counterweight">
+        <summary><span class="group-title">Counterweight</span><span class="group-hint" data-hint="counterweight"></span></summary>
+        <div class="group-body"></div>
+      </details>
+      <details class="ctrl-group" data-group="losses">
+        <summary><span class="group-title">Losses &amp; environment</span><span class="group-hint" data-hint="losses"></span></summary>
+        <div class="group-body"></div>
+      </details>
+      <details class="ctrl-group" data-group="target">
+        <summary><span class="group-title">Target</span><span class="group-hint" data-hint="target"></span></summary>
+        <div class="group-body"></div>
+      </details>
+
+      <div class="config-actions">
+        <button id="btnRecalc" class="btn btn-primary" type="button" title="Re-run the simulation with the current parameters">Recalculate</button>
+        <button id="btnCopyJson" class="btn" type="button" title="Copy the current configuration to the clipboard as JSON">Copy JSON</button>
+        <button id="btnImportJson" class="btn" type="button" title="Paste a configuration JSON to load it">Import JSON</button>
+        <button id="btnShare" class="btn" type="button" title="Copy a shareable URL that encodes the current configuration">Share URL</button>
+      </div>
+    </section>
+
+    <!-- ===================== Scene + results column ===================== -->
+    <section class="scene-col">
+      <div class="card scene-card" aria-labelledby="scene-heading">
+        <div class="card-head">
+          <h2 id="scene-heading">Launch simulation</h2>
+          <span id="phaseReadout" class="phase-readout" aria-live="off">cocked</span>
+        </div>
+        <div class="scene-wrap">
+          <canvas id="sceneCanvas" role="img" aria-label="Side view animation of the trebuchet throwing the projectile toward the target"></canvas>
+        </div>
+        <div class="transport" role="group" aria-label="Animation controls">
+          <button id="btnRestart" class="btn btn-icon" type="button" title="Restart animation" aria-label="Restart animation">&#x23EE;</button>
+          <button id="btnPlay" class="btn btn-icon btn-primary" type="button" title="Play or pause animation" aria-label="Play animation">&#x25B6;</button>
+          <button id="btnStepFrame" class="btn btn-icon" type="button" title="Step forward one frame" aria-label="Step forward one frame">&#x23ED;</button>
+          <label class="speed-label" for="speedSelect">Speed</label>
+          <select id="speedSelect" aria-label="Animation speed">
+            <option value="0.1">0.1&times;</option>
+            <option value="0.25">0.25&times;</option>
+            <option value="0.5">0.5&times;</option>
+            <option value="1" selected>1&times;</option>
+          </select>
+          <input id="timeline" class="timeline" type="range" min="0" max="1000" value="0" step="1"
+                 aria-label="Animation timeline — drag to scrub through the launch">
+          <output id="timeReadout" class="time-readout" for="timeline" aria-live="off">t = 0.000 s</output>
+        </div>
+      </div>
+
+      <div class="card results-card" aria-labelledby="results-heading">
+        <div class="card-head">
+          <h2 id="results-heading">Results &amp; diagnostics</h2>
+          <span id="statusBadge" class="status-badge" role="status" aria-live="polite">&mdash;</span>
+        </div>
+        <div id="resultsGrid" class="results-grid" aria-live="off"></div>
+        <p class="fine-print">All values come from the simplified model described under
+          <a href="#assumptions-heading">Physics assumptions</a> — treat them as estimates, not engineering predictions.</p>
+      </div>
+    </section>
+
+    <!-- ===================== Full-width sections ===================== -->
+    <section class="card wide-card" aria-labelledby="chart-heading">
+      <div class="card-head">
+        <h2 id="chart-heading">Trajectory</h2>
+        <div class="chart-legend" aria-hidden="false">
+          <span class="legend-item"><span class="legend-swatch swatch-drag" aria-hidden="true"></span>With drag</span>
+          <span class="legend-item"><span class="legend-swatch swatch-vacuum" aria-hidden="true"></span>Vacuum</span>
+          <span class="legend-item"><span class="legend-swatch swatch-band" aria-hidden="true"></span>20&ndash;25 m band</span>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chartCanvas" role="img" aria-label="Chart of projectile height versus horizontal distance, with the 20 to 25 meter target band"></canvas>
+        <div id="chartTip" class="chart-tip" role="status" aria-live="off" hidden></div>
+      </div>
+    </section>
+
+    <section class="card wide-card" aria-labelledby="search-heading">
+      <div class="card-head">
+        <h2 id="search-heading">Find configurations</h2>
+      </div>
+      <p class="section-note">
+        Searches a bounded grid of counterweight mass, arm lengths, sling length, and release angle
+        (your current projectile, losses, and environment settings are held fixed) and ranks candidates by
+        range error, then counterweight mass, launch energy, and sensitivity to small parameter changes.
+      </p>
+      <div class="search-controls">
+        <button id="btnSearch" class="btn btn-primary" type="button">Find configurations</button>
+        <button id="btnCancelSearch" class="btn" type="button" hidden>Cancel</button>
+        <div class="progress-wrap" aria-hidden="true"><div id="searchProgress" class="progress-bar"></div></div>
+        <span id="searchStatus" class="search-status" role="status" aria-live="polite"></span>
+      </div>
+      <div class="table-scroll">
+        <table id="searchTable" class="data-table" hidden>
+          <caption class="visually-hidden">Best configurations found by the grid search. Activate a row to load it into the simulator.</caption>
+          <thead>
+            <tr>
+              <th scope="col">#</th><th scope="col">Proj. (kg)</th><th scope="col">Target (m)</th>
+              <th scope="col">CW (kg)</th><th scope="col">Arm ratio</th><th scope="col">Long arm (m)</th>
+              <th scope="col">Short arm (m)</th><th scope="col">Sling (m)</th><th scope="col">Release (&deg;)</th>
+              <th scope="col">Launch (m/s)</th><th scope="col">Range (m)</th><th scope="col">Error (m)</th>
+              <th scope="col">Eff. (%)</th><th scope="col">Load</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card wide-card" aria-labelledby="sens-heading">
+      <details class="section-details">
+        <summary><h2 id="sens-heading">Sensitivity analysis</h2></summary>
+        <p class="section-note">
+          Perturbs key parameters by small amounts and reports how the estimated range shifts. Configurations whose
+          range moves more than the target tolerance under a &plusmn;1% change are flagged as highly sensitive —
+          they are unlikely to be repeatable with a physical machine.
+        </p>
+        <button id="btnSensitivity" class="btn" type="button">Evaluate sensitivity</button>
+        <div id="sensSummary" class="sens-summary" role="status" aria-live="polite"></div>
+        <div class="table-scroll">
+          <table id="sensTable" class="data-table" hidden>
+            <caption class="visually-hidden">Range change for small perturbations of each parameter</caption>
+            <thead>
+              <tr>
+                <th scope="col">Parameter</th><th scope="col">&minus;5%</th><th scope="col">&minus;1%</th>
+                <th scope="col">+1%</th><th scope="col">+5%</th><th scope="col">Verdict</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="card wide-card" aria-labelledby="presets-heading">
+      <div class="card-head">
+        <h2 id="presets-heading">Presets</h2>
+      </div>
+      <p class="section-note">
+        Six starting points tuned with this simulator&rsquo;s own model. The ranges shown are re-computed live with the
+        current physics code — if a preset misses its target, it says so honestly.
+      </p>
+      <div id="presetButtons" class="preset-buttons" role="group" aria-label="Preset configurations"></div>
+      <div class="table-scroll">
+        <table id="presetTable" class="data-table">
+          <caption class="visually-hidden">Comparison of the built-in presets, evaluated live by the simulator</caption>
+          <thead>
+            <tr>
+              <th scope="col">Preset</th><th scope="col">Proj. (kg)</th><th scope="col">Target (m)</th>
+              <th scope="col">CW (kg)</th><th scope="col">Long arm (m)</th><th scope="col">Sling (m)</th>
+              <th scope="col">Release (&deg;)</th><th scope="col">Launch (m/s)</th><th scope="col">Range (m)</th>
+              <th scope="col">Status</th><th scope="col">Load</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card wide-card prose" aria-labelledby="assumptions-heading">
+      <h2 id="assumptions-heading">Physics assumptions &amp; equations</h2>
+      <p>
+        Everything below is an <strong>approximation chosen for transparency</strong>, implemented with SI units
+        throughout. The same equations appear as comments in <code>simulation.js</code>.
+      </p>
+
+      <h3>1. Throw phase — quasi-static energy balance</h3>
+      <p>
+        The arm is treated as a rigid body rotating about a frictionless pin at the pivot (user-set friction is
+        applied as an energy-loss percentage instead of a torque). For each arm angle
+        <var>&theta;</var> between the cocked angle and the release angle, the model balances energy:
+      </p>
+      <p class="equation">
+        M<sub>cw</sub>&middot;g&middot;&Delta;h<sub>cw</sub>(&theta;)&middot;&eta; =
+        &frac12;&middot;I<sub>total</sub>&middot;&omega;&sup2;(&theta;)
+        + m<sub>p</sub>&middot;g&middot;&Delta;h<sub>p</sub>(&theta;)
+        + m<sub>arm</sub>&middot;g&middot;&Delta;h<sub>arm</sub>(&theta;)
+      </p>
+      <p>
+        where <var>&eta;</var> = counterweight efficiency &times; (1 &minus; pivot friction loss) &times;
+        (1 &minus; structural-flex loss). Solving for <var>&omega;(&theta;)</var> gives the arm&rsquo;s angular speed at every
+        angle; integrating d<var>t</var> = d<var>&theta;</var>/<var>&omega;</var> produces the throw-phase timing used by
+        the animation. The counterweight&rsquo;s potential energy is <em>never</em> assigned entirely to the projectile —
+        the arm, the counterweight&rsquo;s own residual motion, and the projectile share it through the combined inertia.
+      </p>
+
+      <h3>2. Rotational inertia</h3>
+      <ul>
+        <li><strong>Arm:</strong> a uniform beam of total length <var>L<sub>1</sub></var>+<var>L<sub>2</sub></var> with a
+          user-set centre of mass offset <var>d</var> from the pivot, via the parallel-axis theorem:
+          <span class="equation-inline">I<sub>arm</sub> = (1/12)&middot;m<sub>arm</sub>&middot;(L<sub>1</sub>+L<sub>2</sub>)&sup2; +
+          m<sub>arm</sub>&middot;d&sup2;</span></li>
+        <li><strong>Fixed counterweight:</strong> a point mass at the short-arm tip:
+          <span class="equation-inline">I<sub>cw</sub> = M<sub>cw</sub>&middot;L<sub>2</sub>&sup2;</span></li>
+        <li><strong>Hinged counterweight:</strong> a hanging weight falls more vertically and retains less rotational
+          energy, so its coupling is scaled by <var>k</var> = 0.5:
+          <span class="equation-inline">I<sub>cw</sub> = 0.5&middot;M<sub>cw</sub>&middot;L<sub>2</sub>&sup2;</span>.
+          This is a crude stand-in for real pendulum dynamics, which would require a multi-body simulation.</li>
+        <li><strong>Projectile + sling:</strong> the sling is assumed taut and aligned with the arm at release, so the
+          projectile orbits at radius <var>r<sub>p</sub></var> = <var>L<sub>1</sub></var> + <var>L<sub>s</sub></var>:
+          <span class="equation-inline">I<sub>p</sub> = m<sub>p</sub>&middot;r<sub>p</sub>&sup2;</span></li>
+      </ul>
+
+      <h3>3. Sling and release</h3>
+      <p>
+        The sling model is <strong>kinematic, not dynamic</strong>: its angle relative to the arm is interpolated from
+        the initial fold-back angle to fully aligned at release (a real sling whips according to its own equation of
+        motion). Launch speed is <span class="equation-inline">v = &omega;<sub>rel</sub>&middot;r<sub>p</sub>&middot;(1 &minus;
+        sling loss)</span>, directed perpendicular to the arm-plus-sling line. Choosing the release angle sets the arm
+        position at which the pin lets go, which in this geometry equals the launch elevation angle.
+      </p>
+
+      <h3>4. Flight phase — numerical integration</h3>
+      <p>
+        After release the projectile is integrated with the semi-implicit Euler method at the user-set time step.
+        In drag mode the aerodynamic force is quadratic:
+      </p>
+      <p class="equation">
+        F<sub>drag</sub> = &frac12;&middot;&rho;&middot;C<sub>d</sub>&middot;A&middot;|v<sub>rel</sub>|&sup2;,
+        &nbsp; v<sub>rel</sub> = v &minus; v<sub>wind</sub>
+      </p>
+      <p>
+        with horizontal wind included in the relative velocity. Integration stops when the projectile crosses the
+        landing plane (ground, or the optional target height), and the exact impact point is interpolated between the
+        last two steps. The vacuum curve shown for comparison uses the same integrator with drag switched off; the
+        closed-form range formula is used only as a cross-check in the self-test panel, never as the primary result.
+      </p>
+
+      <h3>5. What the model ignores</h3>
+      <ul>
+        <li>True multi-body dynamics of arm + hinged counterweight + sling (replaced by the energy balance and the
+          fixed hinge coupling factor)</li>
+        <li>Sling tension, whip dynamics, and release-pin geometry (replaced by an interpolated sling angle and a
+          user-set release angle and loss percentage)</li>
+        <li>Frame compliance, wheel/base motion, axle friction as torque, air resistance on the arm and sling</li>
+        <li>Projectile spin (Magnus effect), vertical wind, gusts, and altitude-dependent air density</li>
+        <li>Material strength — the simulator will happily "launch" configurations that would break a real machine</li>
+      </ul>
+
+      <h3>6. Self-tests</h3>
+      <details class="section-details">
+        <summary><h3 class="inline-h">Run the built-in checks</h3></summary>
+        <p class="section-note">Quick assertions on the physics core (energy audit closure, vacuum range vs. the
+          closed-form solution, drag and wind behaviour, invalid-input handling, state round-trips).</p>
+        <button id="btnRunTests" class="btn" type="button">Run tests</button>
+        <ul id="testResults" class="test-results" aria-live="polite"></ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>
+      Educational use only — this simulator is not a substitute for professional structural analysis or physical
+      testing. Static site: HTML + CSS + vanilla JavaScript, no backend.
+    </p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="importDialog" class="import-dialog" aria-labelledby="import-heading">
+    <form method="dialog">
+      <h2 id="import-heading">Import configuration JSON</h2>
+      <p class="section-note">Paste a configuration copied with &ldquo;Copy JSON&rdquo;. Unknown keys are ignored and
+        values are clamped to their allowed ranges.</p>
+      <textarea id="importText" rows="8" spellcheck="false" aria-label="Configuration JSON"></textarea>
+      <p id="importError" class="import-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn" type="submit">Cancel</button>
+        <button id="btnImportConfirm" value="default" class="btn btn-primary" type="button">Import</button>
+      </div>
+    </form>
+  </dialog>
+
+  <noscript>
+    <p class="noscript-note">This simulator needs JavaScript to run — everything executes locally in your browser;
+      nothing is sent to a server.</p>
+  </noscript>
+
+  <script src="./simulation.js" defer></script>
+</body>
+</html>
