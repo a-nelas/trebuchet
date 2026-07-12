@@ -22,6 +22,7 @@
   --series-vacuum: #1baf7a; /* categorical slot 2 (aqua)  — vacuum comparison  */
   --accent: #2a78d6;
   --accent-ink: #ffffff;
+  --scene-highlight: #d9531e; /* orange — part highlight, distinct from blue/green scene marks */
 
   --status-good: #0ca30c;
   --status-warning: #fab219;
@@ -54,6 +55,7 @@
   --series-vacuum: #199e70;
   --accent: #3987e5;
   --accent-ink: #ffffff;
+  --scene-highlight: #f2915f; /* orange — part highlight, distinct from blue/green scene marks */
 
   --good-text: #0ca30c;
   --band-fill: rgba(12, 163, 12, 0.14);
@@ -167,6 +169,14 @@ body {
   max-width: 1280px;
   margin: 20px auto 0;
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Two-column top region. Its own grid bounds the sticky scene column so it can
+   never travel down and overlap the full-width sections below. */
+.dashboard-top {
   display: grid;
   grid-template-columns: minmax(300px, 380px) 1fr;
   gap: 18px;
@@ -179,14 +189,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  /* Keep the scene sticky on tall desktop screens so results stay visible while tweaking */
+  /* Sticky within .dashboard-top: stays visible while tweaking, releases at its end */
   position: sticky;
   top: 12px;
 }
-.wide-card { grid-column: 1 / -1; }
 
 @media (max-width: 980px) {
-  .layout { grid-template-columns: 1fr; }
+  .dashboard-top { grid-template-columns: 1fr; }
   .controls-col, .scene-col { grid-column: 1; position: static; }
 }
 
@@ -304,8 +313,14 @@ body {
 
 /* One control row: label+info | slider | number+unit.
    Fixed template so value changes never shift layout. */
-.ctrl-row { padding: 8px 0; border-bottom: 1px dashed var(--grid); }
+.ctrl-row { padding: 8px 0 8px 8px; margin-left: -8px; border-bottom: 1px dashed var(--grid);
+  border-left: 2px solid transparent; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
 .ctrl-row:last-child { border-bottom: 0; }
+/* Reinforces which control drives the currently highlighted diagram part. */
+.ctrl-row.is-highlighting {
+  border-left-color: var(--scene-highlight);
+  background: color-mix(in srgb, var(--scene-highlight) 8%, transparent);
+}
 
 .ctrl-label-line {
   display: flex;

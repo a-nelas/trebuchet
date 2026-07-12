@@ -37,54 +37,48 @@
 const CONFIG = [
   /* ------------------------------ projectile ---------------------------- */
   { key: 'massP', group: 'projectile', label: 'Projectile mass', unit: 'kg',
-    min: 0.5, max: 1.5, step: 0.01, def: 1.0, url: 'm', randomize: true,
+    min: 0.5, max: 1.5, step: 0.01, def: 1.0, url: 'm', randomize: true, part: 'projectile',
     tip: 'Mass of the thrown projectile. The 20–25 m goal in this app assumes 0.5–1.5 kg.' },
   { key: 'diameter', group: 'projectile', label: 'Projectile diameter', unit: 'm',
-    min: 0.05, max: 0.20, step: 0.005, def: 0.10, url: 'd', randomize: true,
+    min: 0.05, max: 0.20, step: 0.005, def: 0.10, url: 'd', randomize: true, part: 'projectile',
     tip: 'Used for the aerodynamic cross-section A = π·(d/2)² in drag mode.' },
-  { key: 'dragCoeff', group: 'projectile', label: 'Drag coefficient (Cd)', unit: '–',
-    min: 0.1, max: 1.2, step: 0.01, def: 0.47, url: 'cd', randomize: true,
-    tip: 'Dimensionless drag coefficient. ≈0.47 for a smooth sphere; higher for irregular shapes.' },
-  { key: 'airDensity', group: 'projectile', label: 'Air density', unit: 'kg/m³',
-    min: 0.9, max: 1.4, step: 0.005, def: 1.225, url: 'rho', randomize: false,
-    tip: 'Sea-level standard air is 1.225 kg/m³. Lower at altitude or high temperature.' },
 
   /* ------------------------------- geometry ----------------------------- */
   { key: 'longArm', group: 'geometry', label: 'Long arm (pivot → sling)', unit: 'm',
-    min: 1.0, max: 4.0, step: 0.05, def: 2.2, url: 'l1', randomize: true,
+    min: 1.0, max: 4.0, step: 0.05, def: 2.2, url: 'l1', randomize: true, part: 'longArm',
     tip: 'Distance from the pivot axle to the sling attachment at the throwing tip.' },
   { key: 'shortArm', group: 'geometry', label: 'Short arm (pivot → CW)', unit: 'm',
-    min: 0.2, max: 1.5, step: 0.05, def: 0.6, url: 'l2', randomize: true,
+    min: 0.2, max: 1.5, step: 0.05, def: 0.6, url: 'l2', randomize: true, part: 'shortArm',
     tip: 'Distance from the pivot axle to the counterweight attachment.' },
   { key: 'slingLength', group: 'geometry', label: 'Sling length', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 1.6, url: 'ls', randomize: true,
+    min: 0.5, max: 3.0, step: 0.05, def: 1.6, url: 'ls', randomize: true, part: 'sling',
     tip: 'Length of the sling from arm tip to pouch. Longer slings raise launch speed but demand clearance.' },
   { key: 'pivotHeight', group: 'geometry', label: 'Pivot height', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 2.0, url: 'h', randomize: true,
+    min: 0.5, max: 3.0, step: 0.05, def: 2.0, url: 'h', randomize: true, part: 'frame',
     tip: 'Height of the pivot axle above the ground.' },
   { key: 'armAngle0', group: 'geometry', label: 'Initial arm angle', unit: '°',
-    min: 20, max: 80, step: 1, def: 42, url: 'a0', randomize: true,
+    min: 20, max: 80, step: 1, def: 42, url: 'a0', randomize: true, part: 'arm',
     tip: 'Cocked position: how far the long arm points below horizontal (on the side away from the target).' },
   { key: 'slingAngle0', group: 'geometry', label: 'Initial sling angle', unit: '°',
-    min: 0, max: 120, step: 1, def: 45, url: 's0', randomize: true,
+    min: 0, max: 120, step: 1, def: 45, url: 's0', randomize: true, part: 'sling',
     tip: 'Fold-back angle between the sling and the arm’s outward direction at the cocked position. 0° = sling extends straight beyond the tip.' },
   { key: 'releaseAngle', group: 'geometry', label: 'Release angle', unit: '°',
-    min: 10, max: 80, step: 0.5, def: 40, url: 'ra', randomize: true,
+    min: 10, max: 80, step: 0.5, def: 40, url: 'ra', randomize: true, part: 'arm',
     tip: 'Release-pin equivalent: launch elevation above horizontal. In this simplified geometry the pin lets go when the arm+sling line reaches 90° + this angle.' },
   { key: 'armMass', group: 'geometry', label: 'Arm mass', unit: 'kg',
-    min: 2, max: 40, step: 0.5, def: 8, url: 'am', randomize: true,
+    min: 2, max: 40, step: 0.5, def: 8, url: 'am', randomize: true, part: 'arm',
     tip: 'Mass of the beam. Heavier arms soak up counterweight energy as rotational inertia.' },
   { key: 'armCom', group: 'geometry', label: 'Arm centre of mass', unit: 'm',
-    min: -1.0, max: 2.0, step: 0.05, def: 0.4, url: 'ac', randomize: true,
+    min: -1.0, max: 2.0, step: 0.05, def: 0.4, url: 'ac', randomize: true, part: 'com',
     tip: 'Signed distance of the arm’s centre of mass from the pivot; positive toward the long (throwing) end.' },
 
   /* ----------------------------- counterweight -------------------------- */
   { key: 'cwMass', group: 'counterweight', label: 'Counterweight mass', unit: 'kg',
-    min: 10, max: 300, step: 1, def: 120, url: 'cw', randomize: true,
+    min: 10, max: 300, step: 1, def: 120, url: 'cw', randomize: true, part: 'counterweight',
     tip: 'Mass of the falling counterweight — the machine’s energy source.' },
   { key: 'cwMode', group: 'counterweight', label: 'Counterweight mode', unit: '',
     type: 'select', options: [['hinged', 'Hinged (hanging)'], ['fixed', 'Fixed to arm']],
-    def: 'hinged', url: 'cm', randomize: false,
+    def: 'hinged', url: 'cm', randomize: false, part: 'counterweight',
     tip: 'A hinged (hanging) counterweight falls more vertically and wastes less energy in its own rotation. Modeled by a reduced inertia coupling factor — a stated approximation.' },
   { key: 'cwDropAuto', group: 'counterweight', label: 'Drop height from geometry', unit: '',
     type: 'checkbox', def: true, url: 'da', randomize: false,
@@ -109,6 +103,12 @@ const CONFIG = [
   { key: 'windSpeed', group: 'losses', label: 'Wind speed (+ = tailwind)', unit: 'm/s',
     min: -10, max: 10, step: 0.1, def: 0, url: 'w', randomize: false,
     tip: 'Horizontal wind along the throw direction. Positive pushes the projectile down-range. Only affects drag mode.' },
+  { key: 'dragCoeff', group: 'losses', label: 'Drag coefficient (Cd)', unit: '–',
+    min: 0.1, max: 1.2, step: 0.01, def: 0.47, url: 'cd', randomize: true,
+    tip: 'Dimensionless drag coefficient. ≈0.47 for a smooth sphere; higher for irregular shapes. Only affects drag mode.' },
+  { key: 'airDensity', group: 'losses', label: 'Air density', unit: 'kg/m³',
+    min: 0.9, max: 1.4, step: 0.005, def: 1.225, url: 'rho', randomize: false,
+    tip: 'Sea-level standard air is 1.225 kg/m³. Lower at altitude or high temperature. Only affects drag mode.' },
   { key: 'gravity', group: 'losses', label: 'Gravity', unit: 'm/s²',
     min: 1.0, max: 15.0, step: 0.01, def: 9.81, url: 'g', randomize: false,
     tip: 'Gravitational acceleration. 9.81 m/s² on Earth.' },
@@ -1048,6 +1048,7 @@ function themeColors() {
     drag: v('--series-drag'), vacuum: v('--series-vacuum'),
     good: v('--status-good'), critical: v('--status-critical'),
     band: v('--band-fill') || 'rgba(12,163,12,0.10)',
+    highlight: v('--scene-highlight') || '#d9531e',
   };
 }
 
@@ -1069,6 +1070,38 @@ function fitCanvas(canvas) {
 class SceneRenderer {
   constructor(canvas) {
     this.canvas = canvas;
+    // Part id currently emphasized (set by the UI on control hover/focus), or null.
+    this.highlightPart = null;
+  }
+
+  /** Draw a line, optionally preceded by a translucent wider "halo" of the same colour. */
+  haloLine(ctx, x1, y1, x2, y2, width, color, halo) {
+    if (halo) {
+      ctx.save();
+      ctx.globalAlpha = 0.30;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width + 9;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.restore();
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+
+  /** Small accent label tag drawn at (x, y) in screen pixels. */
+  partLabel(ctx, x, y, text, C) {
+    ctx.font = '600 11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const padX = 5, w = ctx.measureText(text).width + padX * 2, h = 16;
+    ctx.fillStyle = C.highlight;
+    ctx.globalAlpha = 0.15;
+    ctx.fillRect(x, y - h + 3, w, h);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = C.highlight;
+    ctx.fillText(text, x + padX, y);
   }
 
   /** World window that fits the machine, the flight and the target, aspect-true. */
@@ -1147,16 +1180,25 @@ class SceneRenderer {
     ctx.fillText(`${Utils.fmt(P.targetDistance, 1)} m`, px(P.targetDistance), py(P.targetHeight) - 27);
 
     const H = P.pivotHeight;
+    const hp = this.highlightPart;
+    const hiFrame = hp === 'frame';
 
     /* Frame: simple A-frame under the pivot */
-    ctx.strokeStyle = C.ink2;
-    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     const spread = Math.max(0.35 * H, 0.3);
-    ctx.beginPath();
-    ctx.moveTo(px(-spread), py(0)); ctx.lineTo(px(0), py(H));
-    ctx.lineTo(px(spread), py(0));
-    ctx.stroke();
+    const frameColor = hiFrame ? C.highlight : C.ink2;
+    this.haloLine(ctx, px(-spread), py(0), px(0), py(H), 3, frameColor, hiFrame);
+    this.haloLine(ctx, px(0), py(H), px(spread), py(0), 3, frameColor, hiFrame);
+    if (hiFrame) {
+      // Vertical dimension line visualising pivot height.
+      ctx.save();
+      ctx.strokeStyle = C.highlight;
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(px(0) + 14, py(0)); ctx.lineTo(px(0) + 14, py(H)); ctx.stroke();
+      ctx.restore();
+      this.partLabel(ctx, px(0) + 18, py(H / 2), `pivot height ${Utils.fmt(H, 2)} m`, C);
+    }
 
     if (sim && sim.status !== 'ok') {
       // Invalid config: draw machine at cocked pose + a notice.
@@ -1214,10 +1256,18 @@ class SceneRenderer {
     const pos = f.released ? f.flightPos : f.pouch;
     if (pos) {
       const rPix = Math.max(3, (P.diameter / 2) * T.scale);
-      ctx.fillStyle = C.drag;
+      if (hp === 'projectile') {
+        ctx.save();
+        ctx.globalAlpha = 0.30;
+        ctx.fillStyle = C.highlight;
+        ctx.beginPath(); ctx.arc(px(pos.x), py(pos.y), rPix + 7, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      ctx.fillStyle = hp === 'projectile' ? C.highlight : C.drag;
       ctx.strokeStyle = C.surface;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(px(pos.x), py(pos.y), rPix, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (hp === 'projectile') this.partLabel(ctx, px(pos.x) + rPix + 8, py(pos.y) - 6, 'projectile', C);
     }
 
     /* Impact cross at the very end */
@@ -1251,24 +1301,35 @@ class SceneRenderer {
   drawArm(ctx, T, P, theta, frame, C) {
     const px = T.x, py = T.y;
     const H = P.pivotHeight;
+    const hp = this.highlightPart;
     const tipX = P.longArm * Math.cos(theta), tipY = H + P.longArm * Math.sin(theta);
     const cwX = -P.shortArm * Math.cos(theta), cwY = H - P.shortArm * Math.sin(theta);
+    const hiLong = hp === 'longArm' || hp === 'arm';
+    const hiShort = hp === 'shortArm' || hp === 'arm';
+    const hiCw = hp === 'counterweight';
 
-    /* Arm — long segment slightly thicker */
-    ctx.strokeStyle = C.ink;
     ctx.lineCap = 'round';
-    ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(px(0), py(H)); ctx.lineTo(px(tipX), py(tipY)); ctx.stroke();
-    ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(px(0), py(H)); ctx.lineTo(px(cwX), py(cwY)); ctx.stroke();
+
+    /* Arm — long segment (thin) and short segment (thick), halo'd when highlighted */
+    this.haloLine(ctx, px(0), py(H), px(tipX), py(tipY), 4, hiLong ? C.highlight : C.ink, hiLong);
+    this.haloLine(ctx, px(0), py(H), px(cwX), py(cwY), 5, hiShort ? C.highlight : C.ink, hiShort);
 
     /* Counterweight */
     const cwSide = Math.max(8, Math.min(26, 6 + Math.sqrt(P.cwMass)));
-    ctx.fillStyle = C.ink;
+    const boxColor = hiCw ? C.highlight : C.ink;
+    const cwCy = P.cwMode === 'hinged' ? cwY - 0.3 * P.shortArm : cwY;
+    if (hiCw) { // halo behind the block
+      ctx.save();
+      ctx.globalAlpha = 0.30;
+      ctx.fillStyle = C.highlight;
+      ctx.fillRect(px(cwX) - cwSide / 2 - 5, py(cwCy) - (P.cwMode === 'hinged' ? 0 : cwSide / 2) - 5, cwSide + 10, cwSide + 10);
+      ctx.restore();
+    }
+    ctx.fillStyle = boxColor;
     if (P.cwMode === 'hinged') {
       const hang = 0.3 * P.shortArm;
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(px(cwX), py(cwY)); ctx.lineTo(px(cwX), py(cwY - hang)); ctx.stroke();
+      this.haloLine(ctx, px(cwX), py(cwY), px(cwX), py(cwY - hang), 2, boxColor, hiCw);
+      ctx.fillStyle = boxColor;
       ctx.fillRect(px(cwX) - cwSide / 2, py(cwY - hang), cwSide, cwSide);
     } else {
       ctx.fillRect(px(cwX) - cwSide / 2, py(cwY) - cwSide / 2, cwSide, cwSide);
@@ -1280,12 +1341,39 @@ class SceneRenderer {
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(px(0), py(H), 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    /* Sling (only until release) */
-    if (frame && !frame.released && frame.pouch) {
-      ctx.strokeStyle = C.ink2;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(px(tipX), py(tipY)); ctx.lineTo(px(frame.pouch.x), py(frame.pouch.y)); ctx.stroke();
+    /* Sling (drawn until release; forced when highlighted so it is always visible) */
+    const slingHi = hp === 'sling';
+    let pouch = frame && !frame.released ? frame.pouch : null;
+    if (!pouch && slingHi) {
+      // Highlight-only fallback: draw a representative sling extending beyond the tip.
+      pouch = { x: tipX + P.slingLength * Math.cos(theta), y: tipY + P.slingLength * Math.sin(theta) };
     }
+    if (pouch) {
+      this.haloLine(ctx, px(tipX), py(tipY), px(pouch.x), py(pouch.y), slingHi ? 2.5 : 1.5,
+        slingHi ? C.highlight : C.ink2, slingHi);
+    }
+
+    /* Centre-of-mass marker (highlight only) */
+    if (hp === 'com') {
+      const comX = P.armCom * Math.cos(theta), comY = H + P.armCom * Math.sin(theta);
+      const mx = px(comX), my = py(comY), r = 6;
+      ctx.save();
+      ctx.fillStyle = C.highlight;
+      ctx.strokeStyle = C.surface;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(mx, my - r); ctx.lineTo(mx + r, my); ctx.lineTo(mx, my + r); ctx.lineTo(mx - r, my);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      this.partLabel(ctx, mx + 9, my - 8, 'centre of mass', C);
+    }
+
+    /* Part label tags */
+    if (hiLong && hp !== 'arm') this.partLabel(ctx, px(tipX * 0.5) + 6, py(H + (tipY - H) * 0.5) - 6, 'long arm', C);
+    if (hiShort && hp !== 'arm') this.partLabel(ctx, px(cwX) - 4, py(cwY) - 8, 'short arm', C);
+    if (hp === 'arm') this.partLabel(ctx, px(tipX * 0.5) + 6, py(H + (tipY - H) * 0.5) - 6, 'arm', C);
+    if (hiCw) this.partLabel(ctx, px(cwX) + cwSide / 2 + 4, py(cwCy) + 4, 'counterweight', C);
+    if (slingHi && pouch) this.partLabel(ctx, px((tipX + pouch.x) / 2) + 6, py((tipY + pouch.y) / 2), 'sling', C);
   }
 }
 
@@ -1677,6 +1765,17 @@ const UI = {
   buildRow(p) {
     const row = document.createElement('div');
     row.className = 'ctrl-row';
+
+    // Highlight the matching trebuchet part in the diagram on hover/focus.
+    if (p.part) {
+      const on = () => { row.classList.add('is-highlighting'); this.setHighlight(p.part); };
+      const off = () => { row.classList.remove('is-highlighting'); this.setHighlight(null); };
+      row.addEventListener('pointerenter', on);
+      row.addEventListener('pointerleave', off);
+      row.addEventListener('focusin', on);
+      row.addEventListener('focusout', off);
+    }
+
     const labelLine = document.createElement('div');
     labelLine.className = 'ctrl-label-line has-tip';
 
@@ -1899,6 +1998,14 @@ const UI = {
     }
     this.$('timeReadout').value = `t = ${Utils.fmt(anim.t, 3)} s`;
     this.$('phaseReadout').textContent = frame ? frame.phase : '—';
+  },
+
+  /** Emphasize a trebuchet part in the diagram (or clear with null). */
+  setHighlight(part) {
+    if (!this.scene || this.scene.highlightPart === part) return;
+    this.scene.highlightPart = part;
+    // Redraw now when idle; during playback the animation loop already repaints.
+    if (this.anim && !this.anim.playing) this.anim.render();
   },
 
   /* ------------------------------- wiring ------------------------------- */
