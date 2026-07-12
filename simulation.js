@@ -37,44 +37,44 @@
 const CONFIG = [
   /* ------------------------------ projectile ---------------------------- */
   { key: 'massP', group: 'projectile', label: 'Projectile mass', unit: 'kg',
-    min: 0.5, max: 1.5, step: 0.01, def: 0.5, url: 'm', randomize: true, part: 'projectile',
-    tip: 'Mass of the thrown projectile. The 20–25 m goal in this app assumes 0.5–1.5 kg.' },
+    min: 0.05, max: 5, step: 0.05, def: 0.5, url: 'm', randomize: true, part: 'projectile',
+    tip: 'Mass of the thrown projectile. The build is calibrated around ~0.5 kg, but the slider allows 0.05–5 kg so you can explore heavier or lighter shots.' },
   { key: 'diameter', group: 'projectile', label: 'Projectile diameter', unit: 'm',
-    min: 0.05, max: 0.20, step: 0.005, def: 0.10, url: 'd', randomize: true, part: 'projectile',
+    min: 0.05, max: 0.15, step: 0.005, def: 0.10, url: 'd', randomize: true, part: 'projectile',
     tip: 'Used for the aerodynamic cross-section A = π·(d/2)² in drag mode.' },
 
   /* ------------------------------- geometry ----------------------------- */
   { key: 'longArm', group: 'geometry', label: 'Long arm (pivot → sling)', unit: 'm',
-    min: 1.0, max: 4.0, step: 0.05, def: 3.0, url: 'l1', randomize: true, part: 'longArm',
+    min: 1.0, max: 3.0, step: 0.05, def: 2.0, url: 'l1', randomize: true, part: 'longArm',
     tip: 'Distance from the pivot axle to the sling attachment at the throwing tip.' },
   { key: 'shortArm', group: 'geometry', label: 'Short arm (pivot → CW)', unit: 'm',
-    min: 0.2, max: 1.5, step: 0.05, def: 0.8, url: 'l2', randomize: true, part: 'shortArm',
+    min: 0.2, max: 0.8, step: 0.05, def: 0.5, url: 'l2', randomize: true, part: 'shortArm',
     tip: 'Distance from the pivot axle to the counterweight attachment.' },
   { key: 'slingLength', group: 'geometry', label: 'Sling length', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 1.8, url: 'ls', randomize: true, part: 'sling',
+    min: 0.5, max: 2.5, step: 0.05, def: 1.5, url: 'ls', randomize: true, part: 'sling',
     tip: 'Length of the sling from arm tip to pouch. Longer slings raise launch speed but demand clearance.' },
   { key: 'pivotHeight', group: 'geometry', label: 'Pivot height', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 2.2, url: 'h', randomize: true, part: 'frame',
+    min: 1.0, max: 3.0, step: 0.05, def: 2.0, url: 'h', randomize: true, part: 'frame',
     tip: 'Height of the pivot axle above the ground.' },
   { key: 'armAngle0', group: 'geometry', label: 'Initial arm angle', unit: '°',
-    min: 20, max: 80, step: 1, def: 45, url: 'a0', randomize: true, part: 'arm',
+    min: 20, max: 70, step: 1, def: 45, url: 'a0', randomize: true, part: 'arm',
     tip: 'Cocked position: how far the long arm points below horizontal (on the side away from the target).' },
   { key: 'slingAngle0', group: 'geometry', label: 'Initial sling angle', unit: '°',
-    min: 0, max: 120, step: 1, def: 45, url: 's0', randomize: true, part: 'sling',
+    min: 0, max: 90, step: 1, def: 45, url: 's0', randomize: true, part: 'sling',
     tip: 'Fold-back angle between the sling and the arm’s outward direction at the cocked position. 0° = sling extends straight beyond the tip.' },
   { key: 'releaseAngle', group: 'geometry', label: 'Release angle', unit: '°',
     min: 10, max: 80, step: 0.5, def: 45, url: 'ra', randomize: true, part: 'arm',
     tip: 'Release-pin equivalent: launch elevation above horizontal. In this simplified geometry the pin lets go when the arm+sling line reaches 90° + this angle.' },
   { key: 'armMass', group: 'geometry', label: 'Arm mass', unit: 'kg',
-    min: 2, max: 40, step: 0.5, def: 8, url: 'am', randomize: true, part: 'arm',
+    min: 2, max: 6, step: 0.5, def: 4, url: 'am', randomize: true, part: 'arm',
     tip: 'Mass of the beam. Heavier arms soak up counterweight energy as rotational inertia.' },
   { key: 'armCom', group: 'geometry', label: 'Arm centre of mass', unit: 'm',
-    min: -1.0, max: 2.0, step: 0.05, def: 1.1, url: 'ac', randomize: true, part: 'com',
+    min: -0.5, max: 2.0, step: 0.05, def: 0.75, url: 'ac', randomize: true, part: 'com',
     tip: 'Signed distance of the arm’s centre of mass from the pivot; positive toward the long (throwing) end.' },
 
   /* ----------------------------- counterweight -------------------------- */
   { key: 'cwMass', group: 'counterweight', label: 'Counterweight mass', unit: 'kg',
-    min: 10, max: 300, step: 1, def: 46, url: 'cw', randomize: true, part: 'counterweight',
+    min: 10, max: 80, step: 1, def: 40, url: 'cw', randomize: true, part: 'counterweight',
     tip: 'Mass of the falling counterweight — the machine’s energy source.' },
   { key: 'cwMode', group: 'counterweight', label: 'Counterweight mode', unit: '',
     type: 'select', options: [['hinged', 'Hinged (hanging)'], ['fixed', 'Fixed to arm']],
@@ -84,7 +84,7 @@ const CONFIG = [
     type: 'checkbox', def: true, url: 'da', randomize: false,
     tip: 'When checked, the drop height is derived from the arm sweep. Uncheck to limit it manually (emulating a stop or ground contact).' },
   { key: 'cwDrop', group: 'counterweight', label: 'Counterweight drop height', unit: 'm',
-    min: 0.1, max: 4.0, step: 0.05, def: 1.5, url: 'dh', randomize: false,
+    min: 0.5, max: 2.5, step: 0.05, def: 1.5, url: 'dh', randomize: false,
     tip: 'Vertical distance the counterweight falls. Values above what the geometry allows are clamped.' },
   { key: 'cwEfficiency', group: 'counterweight', label: 'Counterweight efficiency', unit: '%',
     min: 0, max: 100, step: 1, def: 80, url: 'ce', randomize: true,
@@ -704,17 +704,17 @@ const Presets = [
   // low-sensitivity finalist. Every preset is re-simulated live in the UI, so
   // the displayed range always reflects the current model — never these notes.
   { id: 'p05-20', name: '0.5 kg → 20 m',
-    over: { massP: 0.5, targetDistance: 20, cwMass: 60, longArm: 2.8, shortArm: 0.6, slingLength: 2.4, releaseAngle: 52.5 } },
+    over: { massP: 0.5, targetDistance: 20, cwMass: 40, longArm: 1.5, shortArm: 0.4, slingLength: 2.0, releaseAngle: 35 } },
   { id: 'p05-25', name: '0.5 kg → 25 m',
-    over: { massP: 0.5, targetDistance: 25, cwMass: 120, longArm: 2.8, shortArm: 0.4, slingLength: 2.4, releaseAngle: 60 } },
+    over: { massP: 0.5, targetDistance: 25, cwMass: 60, longArm: 1.0, shortArm: 0.8, slingLength: 2.5, releaseAngle: 55 } },
   { id: 'p10-20', name: '1.0 kg → 20 m',
-    over: { massP: 1.0, targetDistance: 20, cwMass: 90, longArm: 1.6, shortArm: 0.4, slingLength: 2.4, releaseAngle: 30 } },
+    over: { massP: 1.0, targetDistance: 20, cwMass: 50, longArm: 2.0, shortArm: 0.5, slingLength: 2.5, releaseAngle: 45 } },
   { id: 'p10-25', name: '1.0 kg → 25 m',
-    over: { massP: 1.0, targetDistance: 25, cwMass: 60, longArm: 2.8, shortArm: 1.0, slingLength: 2.0, releaseAngle: 45 } },
+    over: { massP: 1.0, targetDistance: 25, cwMass: 70, longArm: 2.0, shortArm: 0.8, slingLength: 1.5, releaseAngle: 50 } },
   { id: 'p15-20', name: '1.5 kg → 20 m',
-    over: { massP: 1.5, targetDistance: 20, cwMass: 60, longArm: 1.2, shortArm: 1.0, slingLength: 2.4, releaseAngle: 30 } },
+    over: { massP: 1.5, targetDistance: 20, cwMass: 70, longArm: 1.0, shortArm: 0.6, slingLength: 2.0, releaseAngle: 45 } },
   { id: 'p15-25', name: '1.5 kg → 25 m',
-    over: { massP: 1.5, targetDistance: 25, cwMass: 120, longArm: 2.4, shortArm: 0.8, slingLength: 1.6, releaseAngle: 52.5 } },
+    over: { massP: 1.5, targetDistance: 25, cwMass: 50, longArm: 2.5, shortArm: 0.8, slingLength: 2.5, releaseAngle: 35 } },
 ];
 
 function presetParams(preset) {
@@ -734,11 +734,11 @@ function presetParams(preset) {
  * ==========================================================================*/
 
 const SEARCH_GRID = {
-  cwMass: [20, 40, 60, 90, 120, 150, 180, 220, 260, 300],
-  longArm: [1.2, 1.6, 2.0, 2.4, 2.8, 3.2],
-  shortArm: [0.4, 0.6, 0.8, 1.0],
-  slingLength: [0.8, 1.2, 1.6, 2.0, 2.4],
-  releaseAngle: [30, 37.5, 45, 52.5, 60],
+  cwMass: [20, 30, 40, 50, 60, 70, 80],
+  longArm: [1.0, 1.5, 2.0, 2.5, 3.0],
+  shortArm: [0.2, 0.4, 0.5, 0.6, 0.8],
+  slingLength: [0.5, 1.0, 1.5, 2.0, 2.5],
+  releaseAngle: [35, 40, 45, 50, 55],
 };
 const SEARCH_COARSE = { sweepSteps: 16, flightDt: 0.005, needVacuum: false };
 const SEARCH_FINE = { sweepSteps: 64, flightDt: 0.002, needVacuum: false };
