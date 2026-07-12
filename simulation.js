@@ -68,9 +68,9 @@ const CONFIG = [
   { key: 'armMass', group: 'geometry', label: 'Arm mass', unit: 'kg',
     min: 2, max: 6, step: 0.5, def: 4, url: 'am', randomize: true, part: 'arm',
     tip: 'Mass of the beam. Heavier arms soak up counterweight energy as rotational inertia.' },
-  { key: 'armCom', group: 'geometry', label: 'Arm centre of mass', unit: 'm',
-    min: -0.5, max: 2.0, step: 0.05, def: 0.75, url: 'ac', randomize: true, part: 'com',
-    tip: 'Signed distance of the arm’s centre of mass from the pivot; positive toward the long (throwing) end.' },
+  // Arm centre of mass is no longer a user control: the arm is modeled as a uniform
+  // beam, so its CoM sits at the beam midpoint, (longArm − shortArm)/2 from the pivot.
+  // See uniformArmCom() and the physics-assumptions section.
 
   /* ----------------------------- counterweight -------------------------- */
   { key: 'cwMass', group: 'counterweight', label: 'Counterweight mass', unit: 'kg',
@@ -138,6 +138,17 @@ function defaultParams() {
   const o = {};
   for (const p of CONFIG) o[p.key] = p.def;
   return o;
+}
+
+/**
+ * Arm centre-of-mass offset from the pivot (m), signed positive toward the long
+ * (throwing) end. The arm is modeled as a UNIFORM beam of length longArm+shortArm,
+ * so its CoM is the beam midpoint: halfway between the counterweight end (−shortArm)
+ * and the sling end (+longArm), i.e. (longArm − shortArm)/2. This is consistent with
+ * the (1/12)·m·(L1+L2)² uniform-rod term used for the arm's rotational inertia.
+ */
+function uniformArmCom(P) {
+  return (P.longArm - P.shortArm) / 2;
 }
 
 /* ============================================================================
@@ -265,7 +276,8 @@ const Validation = {
  *   η = cwEfficiency · (1 − frictionLoss) · (1 − flexLoss)
  *
  * Inertia about the pivot:
- *   I_arm = (1/12)·m_arm·(L1+L2)²  +  m_arm·d_com²   (uniform beam + parallel axis)
+ *   I_arm = (1/12)·m_arm·(L1+L2)²  +  m_arm·d_com²   (uniform beam + parallel axis,
+ *          d_com = (L1 − L2)/2, the uniform beam's midpoint offset from the pivot)
  *   I_cw  = M·L2²          (fixed)   or   0.5·M·L2²  (hinged — crude coupling factor)
  *   I_p   = m_p·(L1+Ls)²   (sling assumed taut and arm-aligned at release)
  *
@@ -292,7 +304,8 @@ const TrebuchetModel = {
   /** Combined rotational inertia about the pivot (kg·m²). */
   totalInertia(P) {
     const beamLen = P.longArm + P.shortArm;
-    const iArm = (1 / 12) * P.armMass * beamLen * beamLen + P.armMass * P.armCom * P.armCom;
+    const armCom = uniformArmCom(P);
+    const iArm = (1 / 12) * P.armMass * beamLen * beamLen + P.armMass * armCom * armCom;
     const k = P.cwMode === 'hinged' ? HINGED_COUPLING : 1;
     const iCw = k * P.cwMass * P.shortArm * P.shortArm;
     const rp = P.longArm + P.slingLength;
@@ -314,6 +327,7 @@ const TrebuchetModel = {
     const H = P.pivotHeight;
     const L1 = P.longArm, L2 = P.shortArm, Ls = P.slingLength;
     const rp = L1 + Ls;
+    const armCom = uniformArmCom(P); // uniform beam: CoM at the midpoint, (L1 − L2)/2
     const rProj = P.diameter / 2;
     const g = P.gravity;
     const eta = (P.cwEfficiency / 100) * (1 - P.frictionLoss / 100) * (1 - P.flexLoss / 100);
@@ -354,7 +368,7 @@ const TrebuchetModel = {
       const drop = Math.min(L2 * (Math.sin(theta) - sinTheta0), dropLimit);
       const eIn = P.cwMass * g * drop * eta;
       const dPEproj = P.massP * g * (pos.py - start.py);
-      const dPEarm = P.armMass * g * P.armCom * (Math.sin(theta) - sinTheta0);
+      const dPEarm = P.armMass * g * armCom * (Math.sin(theta) - sinTheta0);
       const surplus = eIn - dPEproj - dPEarm;
       if (surplus < -STALL_TOLERANCE_J && i > N * 0.02) {
         return { stalled: true, reason: 'The counterweight cannot drive the arm through the swing — add counterweight mass or drop height, or lighten the projectile and arm.' };
@@ -395,7 +409,7 @@ const TrebuchetModel = {
     const eFactorLoss = eGross * (1 - eta);               // efficiency/friction/flex
     const endPos = pouchAt(thetaRel, 0);
     const ePEproj = P.massP * g * (endPos.py - start.py); // projectile lifted
-    const ePEarm = P.armMass * g * P.armCom * (Math.sin(thetaRel) - sinTheta0);
+    const ePEarm = P.armMass * g * armCom * (Math.sin(thetaRel) - sinTheta0);
     const keArm = 0.5 * iArm * omegaRel * omegaRel;
     const keCw = 0.5 * iCw * omegaRel * omegaRel;
     const keProjBefore = 0.5 * iProj * omegaRel * omegaRel;
@@ -704,17 +718,17 @@ const Presets = [
   // low-sensitivity finalist. Every preset is re-simulated live in the UI, so
   // the displayed range always reflects the current model — never these notes.
   { id: 'p05-20', name: '0.5 kg → 20 m',
-    over: { massP: 0.5, targetDistance: 20, cwMass: 40, longArm: 1.5, shortArm: 0.4, slingLength: 2.0, releaseAngle: 35 } },
+    over: { massP: 0.5, targetDistance: 20, cwMass: 20, longArm: 2.0, shortArm: 0.8, slingLength: 2.5, releaseAngle: 40 } },
   { id: 'p05-25', name: '0.5 kg → 25 m',
-    over: { massP: 0.5, targetDistance: 25, cwMass: 60, longArm: 1.0, shortArm: 0.8, slingLength: 2.5, releaseAngle: 55 } },
+    over: { massP: 0.5, targetDistance: 25, cwMass: 50, longArm: 1.0, shortArm: 0.4, slingLength: 1.5, releaseAngle: 40 } },
   { id: 'p10-20', name: '1.0 kg → 20 m',
-    over: { massP: 1.0, targetDistance: 20, cwMass: 50, longArm: 2.0, shortArm: 0.5, slingLength: 2.5, releaseAngle: 45 } },
+    over: { massP: 1.0, targetDistance: 20, cwMass: 40, longArm: 1.0, shortArm: 0.6, slingLength: 2.0, releaseAngle: 45 } },
   { id: 'p10-25', name: '1.0 kg → 25 m',
-    over: { massP: 1.0, targetDistance: 25, cwMass: 70, longArm: 2.0, shortArm: 0.8, slingLength: 1.5, releaseAngle: 50 } },
+    over: { massP: 1.0, targetDistance: 25, cwMass: 40, longArm: 1.5, shortArm: 0.8, slingLength: 2.5, releaseAngle: 45 } },
   { id: 'p15-20', name: '1.5 kg → 20 m',
-    over: { massP: 1.5, targetDistance: 20, cwMass: 70, longArm: 1.0, shortArm: 0.6, slingLength: 2.0, releaseAngle: 45 } },
+    over: { massP: 1.5, targetDistance: 20, cwMass: 50, longArm: 1.0, shortArm: 0.6, slingLength: 2.5, releaseAngle: 45 } },
   { id: 'p15-25', name: '1.5 kg → 25 m',
-    over: { massP: 1.5, targetDistance: 25, cwMass: 50, longArm: 2.5, shortArm: 0.8, slingLength: 2.5, releaseAngle: 35 } },
+    over: { massP: 1.5, targetDistance: 25, cwMass: 70, longArm: 2.0, shortArm: 0.8, slingLength: 2.0, releaseAngle: 50 } },
 ];
 
 function presetParams(preset) {
@@ -963,7 +977,7 @@ const SelfTest = {
     });
 
     t('An undersized counterweight is reported as invalid, not NaN', () => {
-      const P = Object.assign({}, base, { cwMass: 10, massP: 1.5, armMass: 40, armCom: 2.0 });
+      const P = Object.assign({}, base, { cwMass: 10, massP: 5, armMass: 6 });
       const r = Simulator.run(P);
       if (r.status !== 'invalid') return `status=${r.status} range=${r.metrics && r.metrics.range}`;
       if (!r.errors.length) return 'no explanatory message';
@@ -1351,21 +1365,6 @@ class SceneRenderer {
     if (pouch) {
       this.haloLine(ctx, px(tipX), py(tipY), px(pouch.x), py(pouch.y), slingHi ? 2.5 : 1.5,
         slingHi ? C.highlight : C.ink2, slingHi);
-    }
-
-    /* Centre-of-mass marker (highlight only) */
-    if (hp === 'com') {
-      const comX = P.armCom * Math.cos(theta), comY = H + P.armCom * Math.sin(theta);
-      const mx = px(comX), my = py(comY), r = 6;
-      ctx.save();
-      ctx.fillStyle = C.highlight;
-      ctx.strokeStyle = C.surface;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(mx, my - r); ctx.lineTo(mx + r, my); ctx.lineTo(mx, my + r); ctx.lineTo(mx - r, my);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.restore();
-      this.partLabel(ctx, mx + 9, my - 8, 'centre of mass', C);
     }
 
     /* Part label tags */

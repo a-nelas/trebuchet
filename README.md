@@ -137,6 +137,7 @@ Rotational inertia about the pivot:
 
 ```
 I_arm = (1/12)·m_arm·(L1+L2)²  +  m_arm·d_com²     (uniform beam + parallel axis)
+        d_com = (L1 − L2)/2   (uniform beam: CoM at the midpoint, from the pivot)
 I_cw  = M·L2²         (fixed)   or   0.5·M·L2²      (hinged coupling factor)
 I_p   = m_p·(L1+Ls)²                                (sling taut & arm-aligned)
 ```
