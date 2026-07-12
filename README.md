@@ -202,7 +202,7 @@ Every control is defined once in the **`CONFIG`** array at the top of
 
 ```js
 { key: 'cwMass', group: 'counterweight', label: 'Counterweight mass', unit: 'kg',
-  min: 10, max: 300, step: 1, def: 120, url: 'cw', randomize: true,
+  min: 10, max: 300, step: 1, def: 46, url: 'cw', randomize: true, part: 'counterweight',
   tip: 'Mass of the falling counterweight — the machine’s energy source.' },
 ```
 

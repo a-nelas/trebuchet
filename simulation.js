@@ -37,7 +37,7 @@
 const CONFIG = [
   /* ------------------------------ projectile ---------------------------- */
   { key: 'massP', group: 'projectile', label: 'Projectile mass', unit: 'kg',
-    min: 0.5, max: 1.5, step: 0.01, def: 1.0, url: 'm', randomize: true, part: 'projectile',
+    min: 0.5, max: 1.5, step: 0.01, def: 0.5, url: 'm', randomize: true, part: 'projectile',
     tip: 'Mass of the thrown projectile. The 20–25 m goal in this app assumes 0.5–1.5 kg.' },
   { key: 'diameter', group: 'projectile', label: 'Projectile diameter', unit: 'm',
     min: 0.05, max: 0.20, step: 0.005, def: 0.10, url: 'd', randomize: true, part: 'projectile',
@@ -45,36 +45,36 @@ const CONFIG = [
 
   /* ------------------------------- geometry ----------------------------- */
   { key: 'longArm', group: 'geometry', label: 'Long arm (pivot → sling)', unit: 'm',
-    min: 1.0, max: 4.0, step: 0.05, def: 2.2, url: 'l1', randomize: true, part: 'longArm',
+    min: 1.0, max: 4.0, step: 0.05, def: 3.0, url: 'l1', randomize: true, part: 'longArm',
     tip: 'Distance from the pivot axle to the sling attachment at the throwing tip.' },
   { key: 'shortArm', group: 'geometry', label: 'Short arm (pivot → CW)', unit: 'm',
-    min: 0.2, max: 1.5, step: 0.05, def: 0.6, url: 'l2', randomize: true, part: 'shortArm',
+    min: 0.2, max: 1.5, step: 0.05, def: 0.8, url: 'l2', randomize: true, part: 'shortArm',
     tip: 'Distance from the pivot axle to the counterweight attachment.' },
   { key: 'slingLength', group: 'geometry', label: 'Sling length', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 1.6, url: 'ls', randomize: true, part: 'sling',
+    min: 0.5, max: 3.0, step: 0.05, def: 1.8, url: 'ls', randomize: true, part: 'sling',
     tip: 'Length of the sling from arm tip to pouch. Longer slings raise launch speed but demand clearance.' },
   { key: 'pivotHeight', group: 'geometry', label: 'Pivot height', unit: 'm',
-    min: 0.5, max: 3.0, step: 0.05, def: 2.0, url: 'h', randomize: true, part: 'frame',
+    min: 0.5, max: 3.0, step: 0.05, def: 2.2, url: 'h', randomize: true, part: 'frame',
     tip: 'Height of the pivot axle above the ground.' },
   { key: 'armAngle0', group: 'geometry', label: 'Initial arm angle', unit: '°',
-    min: 20, max: 80, step: 1, def: 42, url: 'a0', randomize: true, part: 'arm',
+    min: 20, max: 80, step: 1, def: 45, url: 'a0', randomize: true, part: 'arm',
     tip: 'Cocked position: how far the long arm points below horizontal (on the side away from the target).' },
   { key: 'slingAngle0', group: 'geometry', label: 'Initial sling angle', unit: '°',
     min: 0, max: 120, step: 1, def: 45, url: 's0', randomize: true, part: 'sling',
     tip: 'Fold-back angle between the sling and the arm’s outward direction at the cocked position. 0° = sling extends straight beyond the tip.' },
   { key: 'releaseAngle', group: 'geometry', label: 'Release angle', unit: '°',
-    min: 10, max: 80, step: 0.5, def: 40, url: 'ra', randomize: true, part: 'arm',
+    min: 10, max: 80, step: 0.5, def: 45, url: 'ra', randomize: true, part: 'arm',
     tip: 'Release-pin equivalent: launch elevation above horizontal. In this simplified geometry the pin lets go when the arm+sling line reaches 90° + this angle.' },
   { key: 'armMass', group: 'geometry', label: 'Arm mass', unit: 'kg',
     min: 2, max: 40, step: 0.5, def: 8, url: 'am', randomize: true, part: 'arm',
     tip: 'Mass of the beam. Heavier arms soak up counterweight energy as rotational inertia.' },
   { key: 'armCom', group: 'geometry', label: 'Arm centre of mass', unit: 'm',
-    min: -1.0, max: 2.0, step: 0.05, def: 0.4, url: 'ac', randomize: true, part: 'com',
+    min: -1.0, max: 2.0, step: 0.05, def: 1.1, url: 'ac', randomize: true, part: 'com',
     tip: 'Signed distance of the arm’s centre of mass from the pivot; positive toward the long (throwing) end.' },
 
   /* ----------------------------- counterweight -------------------------- */
   { key: 'cwMass', group: 'counterweight', label: 'Counterweight mass', unit: 'kg',
-    min: 10, max: 300, step: 1, def: 120, url: 'cw', randomize: true, part: 'counterweight',
+    min: 10, max: 300, step: 1, def: 46, url: 'cw', randomize: true, part: 'counterweight',
     tip: 'Mass of the falling counterweight — the machine’s energy source.' },
   { key: 'cwMode', group: 'counterweight', label: 'Counterweight mode', unit: '',
     type: 'select', options: [['hinged', 'Hinged (hanging)'], ['fixed', 'Fixed to arm']],
@@ -87,7 +87,7 @@ const CONFIG = [
     min: 0.1, max: 4.0, step: 0.05, def: 1.5, url: 'dh', randomize: false,
     tip: 'Vertical distance the counterweight falls. Values above what the geometry allows are clamped.' },
   { key: 'cwEfficiency', group: 'counterweight', label: 'Counterweight efficiency', unit: '%',
-    min: 0, max: 100, step: 1, def: 85, url: 'ce', randomize: true,
+    min: 0, max: 100, step: 1, def: 80, url: 'ce', randomize: true,
     tip: 'Fraction of counterweight potential energy that enters the throw at all (captures rigging and constraint losses not modeled explicitly).' },
 
   /* --------------------------- losses & environment --------------------- */
@@ -122,7 +122,7 @@ const CONFIG = [
 
   /* -------------------------------- target ------------------------------ */
   { key: 'targetDistance', group: 'target', label: 'Target distance', unit: 'm',
-    min: 20, max: 25, step: 0.1, def: 22.5, url: 'td', randomize: false,
+    min: 20, max: 25, step: 0.1, def: 20, url: 'td', randomize: false,
     tip: 'Horizontal distance from the pivot to the target.' },
   { key: 'targetTolerance', group: 'target', label: 'Target tolerance', unit: 'm',
     min: 0.1, max: 5.0, step: 0.1, def: 1.0, url: 'tt', randomize: false,
@@ -704,17 +704,17 @@ const Presets = [
   // low-sensitivity finalist. Every preset is re-simulated live in the UI, so
   // the displayed range always reflects the current model — never these notes.
   { id: 'p05-20', name: '0.5 kg → 20 m',
-    over: { massP: 0.5, targetDistance: 20, cwMass: 120, longArm: 2.0, shortArm: 1.0, slingLength: 0.8, releaseAngle: 52.5 } },
+    over: { massP: 0.5, targetDistance: 20, cwMass: 60, longArm: 2.8, shortArm: 0.6, slingLength: 2.4, releaseAngle: 52.5 } },
   { id: 'p05-25', name: '0.5 kg → 25 m',
-    over: { massP: 0.5, targetDistance: 25, cwMass: 40, longArm: 2.4, shortArm: 1.0, slingLength: 1.2, releaseAngle: 37.5 } },
+    over: { massP: 0.5, targetDistance: 25, cwMass: 120, longArm: 2.8, shortArm: 0.4, slingLength: 2.4, releaseAngle: 60 } },
   { id: 'p10-20', name: '1.0 kg → 20 m',
-    over: { massP: 1.0, targetDistance: 20, cwMass: 60, longArm: 2.4, shortArm: 0.6, slingLength: 0.8, releaseAngle: 45 } },
+    over: { massP: 1.0, targetDistance: 20, cwMass: 90, longArm: 1.6, shortArm: 0.4, slingLength: 2.4, releaseAngle: 30 } },
   { id: 'p10-25', name: '1.0 kg → 25 m',
-    over: { massP: 1.0, targetDistance: 25, cwMass: 40, longArm: 2.0, shortArm: 1.0, slingLength: 2.0, releaseAngle: 37.5 } },
+    over: { massP: 1.0, targetDistance: 25, cwMass: 60, longArm: 2.8, shortArm: 1.0, slingLength: 2.0, releaseAngle: 45 } },
   { id: 'p15-20', name: '1.5 kg → 20 m',
-    over: { massP: 1.5, targetDistance: 20, cwMass: 120, longArm: 1.2, shortArm: 0.8, slingLength: 1.2, releaseAngle: 45 } },
+    over: { massP: 1.5, targetDistance: 20, cwMass: 60, longArm: 1.2, shortArm: 1.0, slingLength: 2.4, releaseAngle: 30 } },
   { id: 'p15-25', name: '1.5 kg → 25 m',
-    over: { massP: 1.5, targetDistance: 25, cwMass: 90, longArm: 1.2, shortArm: 0.6, slingLength: 1.6, releaseAngle: 30 } },
+    over: { massP: 1.5, targetDistance: 25, cwMass: 120, longArm: 2.4, shortArm: 0.8, slingLength: 1.6, releaseAngle: 52.5 } },
 ];
 
 function presetParams(preset) {
